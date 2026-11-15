@@ -29,6 +29,9 @@ pub fn config_dir() -> Result<PathBuf> {
     if fake_sandbox() {
         return Ok(sandbox_dir());
     }
+    if let Some(directory) = env_override("MINIBAR_CONFIG_DIR") {
+        return Ok(directory);
+    }
     Ok(project_dirs()?.config_dir().to_path_buf())
 }
 
@@ -36,7 +39,18 @@ fn data_local_dir() -> Result<PathBuf> {
     if fake_sandbox() {
         return Ok(sandbox_dir());
     }
+    if let Some(directory) = env_override("MINIBAR_DATA_DIR") {
+        return Ok(directory);
+    }
     Ok(project_dirs()?.data_local_dir().to_path_buf())
+}
+
+/// A non-empty directory from the environment, used by portable and test
+/// builds that cannot write the user's profile folders.
+fn env_override(name: &str) -> Option<PathBuf> {
+    std::env::var_os(name)
+        .filter(|value| !value.is_empty())
+        .map(PathBuf::from)
 }
 
 pub fn settings() -> Result<PathBuf> {
