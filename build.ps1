@@ -314,7 +314,9 @@ function New-NsisInstaller {
     [System.IO.File]::WriteAllText($nsiPath, $rendered, $utf8NoBom)
 
     Write-Host "==> makensis ($ArchName)"
-    & $MakeNsis /V2 $nsiPath
+    # The script is UTF-8; without this NSIS reads it in the ANSI codepage and
+    # aborts on any non-ASCII character in a comment or string.
+    & $MakeNsis /V2 /INPUTCHARSET UTF8 $nsiPath
     if ($LASTEXITCODE -ne 0) {
         throw "makensis failed for $ArchName with exit code $LASTEXITCODE"
     }
